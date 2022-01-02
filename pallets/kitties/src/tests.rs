@@ -51,6 +51,8 @@ fn transfer_kitty_works() {
         assert_eq!(SubstrateKitties::kitty_cnt(), 1);
         let hash = SubstrateKitties::kitties_owned(sender)[0];
         assert_ok!(SubstrateKitties::transfer(Origin::signed(1), 2, hash));
+	let kitty = SubstrateKitties::kitties(hash).expect("kitty not exists");
+        assert_eq!(kitty.owner, 2);
         });
 }
 
