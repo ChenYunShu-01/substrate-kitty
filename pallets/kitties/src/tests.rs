@@ -96,7 +96,6 @@ fn buy_kitty_works() {
 
         let kitty = SubstrateKitties::kitties(hash1).expect("kitty not exists");
         assert_eq!(kitty.owner, 5);
-
         });
 }
 
