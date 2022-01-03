@@ -12,13 +12,13 @@ fn create_kitty_works() {
 #[test]
 fn breed_kitty_works() {
 	new_test_ext().execute_with(|| {
-        let sender = 1;
+        let mut sender = 1;
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash1 = SubstrateKitties::kitties_owned(sender)[0];  
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash2 = SubstrateKitties::kitties_owned(sender)[1];        
 
-        let sender = 3;
+        sender = 3;
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash3 = SubstrateKitties::kitties_owned(sender)[0];   
         
@@ -72,12 +72,12 @@ fn set_price_works() {
 #[test]
 fn buy_kitty_works() {
 	new_test_ext().execute_with(|| {
-        let sender = 1;
+        let mut sender = 1;
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash1 = SubstrateKitties::kitties_owned(sender)[0];        
         assert_ok!(SubstrateKitties::set_price(Origin::signed(sender), hash1, Some(3)));
 
-        let sender = 2;
+        sender = 2;
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash2 = SubstrateKitties::kitties_owned(sender)[0];
 
