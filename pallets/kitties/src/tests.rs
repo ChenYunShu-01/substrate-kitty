@@ -38,7 +38,7 @@ fn breed_kitty_works() {
 fn transfer_kitty_not_owner() {
 	new_test_ext().execute_with(|| {
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(1)));
-        let hash = sp_core::H256([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]);
+        let hash = sp_core::H256([1; 32]);
         assert_noop!(SubstrateKitties::transfer(Origin::signed(1), 2, hash), Error::<Test>::KittyNotExist);
         });
 }
