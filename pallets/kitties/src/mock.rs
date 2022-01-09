@@ -87,6 +87,13 @@ impl pallet_kitties::Config for Test {
 
 impl pallet_randomness_collective_flip::Config for Test {}
 
+#[macro_export]
+macro_rules! assert_has_event {
+	($x:expr) => {
+		System::assert_has_event(TestEvent::SubstrateKitties($x))
+	};
+}
+
 pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	GenesisConfig {
