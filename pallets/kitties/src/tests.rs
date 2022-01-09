@@ -1,11 +1,18 @@
-use crate::{mock::*, Error};
+use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
+use crate::mock::{
+	new_test_ext, Event as TestEvent, Origin, System, Test,
+};
+use super::*;
 
 #[test]
 fn create_kitty_works() {
 	new_test_ext().execute_with(|| {
-        assert_ok!(SubstrateKitties::create_kitty(Origin::signed(1)));
-        assert_eq!(SubstrateKitties::kitty_cnt(), 1);
+        let sender = 1;
+        assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
+        assert_eq!(SubstrateKitties::kitty_cnt(), sender);
+        let hash = SubstrateKitties::kitties_owned(sender)[0];  
+        assert_has_event!(Event::<Test>::Created(sender, hash));
         });
 }
 
@@ -50,9 +57,11 @@ fn transfer_kitty_works() {
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         assert_eq!(SubstrateKitties::kitty_cnt(), 1);
         let hash = SubstrateKitties::kitties_owned(sender)[0];
-        assert_ok!(SubstrateKitties::transfer(Origin::signed(1), 2, hash));
-	let kitty = SubstrateKitties::kitties(hash).expect("kitty not exists");
-        assert_eq!(kitty.owner, 2);
+        let reciever = 2;
+        assert_ok!(SubstrateKitties::transfer(Origin::signed(1), reciever, hash));
+        let kitty = SubstrateKitties::kitties(hash).expect("kitty not exists");
+        assert_eq!(kitty.owner, reciever);
+        assert_has_event!(Event::<Test>::Transferred(sender, reciever, hash));
         });
 }
 
@@ -62,9 +71,11 @@ fn set_price_works() {
         let sender = 1;
         assert_ok!(SubstrateKitties::create_kitty(Origin::signed(sender)));
         let hash = SubstrateKitties::kitties_owned(sender)[0];
-        assert_ok!(SubstrateKitties::set_price(Origin::signed(sender), hash, Some(3)));
+        let new_price = 3;
+        assert_ok!(SubstrateKitties::set_price(Origin::signed(sender), hash, Some(new_price)));
         let kitty = SubstrateKitties::kitties(hash).expect("kitty not exists");
-        assert_eq!(kitty.price, Some(3));
+        assert_eq!(kitty.price, Some(new_price));
+        assert_has_event!(Event::<Test>::PriceSet(sender, hash, Some(new_price)));
 	});
 }
 
@@ -84,18 +95,23 @@ fn buy_kitty_works() {
         let kitty1 = SubstrateKitties::kitties(hash1).expect("kitty not exists");
         assert_eq!(kitty1.price, Some(3));
 
-        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(5), hash1, 2), Error::<Test>::KittyBidPriceTooLow);
+        let buyer = 5;
 
-        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(5), hash2, 2), Error::<Test>::KittyNotForSale);
+        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(buyer), hash1, 2), Error::<Test>::KittyBidPriceTooLow);
 
-        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(5), hash1, 100), Error::<Test>::NotEnoughBalance);
+        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(buyer), hash2, 2), Error::<Test>::KittyNotForSale);
+
+        assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(buyer), hash1, 100), Error::<Test>::NotEnoughBalance);
 
         assert_noop!(SubstrateKitties::buy_kitty(Origin::signed(1), hash1, 2), Error::<Test>::BuyerIsKittyOwner);
 
-        assert_ok!(SubstrateKitties::buy_kitty(Origin::signed(5), hash1, 3));
+        let correct_price = 3;
+        assert_ok!(SubstrateKitties::buy_kitty(Origin::signed(buyer), hash1, correct_price));
+        assert_has_event!(Event::<Test>::Bought(buyer, 1, hash1, correct_price));
 
         let kitty = SubstrateKitties::kitties(hash1).expect("kitty not exists");
-        assert_eq!(kitty.owner, 5);
+        assert_eq!(kitty.owner, buyer);
+
         });
 }
 
