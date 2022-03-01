@@ -113,5 +113,6 @@ fn buy_kitty_works() {
         assert_eq!(kitty.owner, buyer);
 
         });
+	
 }
 
